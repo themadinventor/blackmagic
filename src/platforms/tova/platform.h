@@ -7,8 +7,19 @@
 #include <alloca.h>
 
 #include <libopencm3/lm4f/gpio.h>
+#include <libopencm3/usb/usbd.h>
 
 #include "gdb_packet.h"
+
+#define CDCACM_PACKET_SIZE 	64
+#define BOARD_IDENT             "Black Magic Probe (Tova), (Firmware 1.5" VERSION_SUFFIX ", build " BUILDDATE ")"
+#define BOARD_IDENT_DFU		"Black Magic (Upgrade) for Tova, (Firmware 1.5" VERSION_SUFFIX ", build " BUILDDATE ")"
+#define DFU_IDENT               "Black Magic Firmware Upgrade (Tova)"
+#define DFU_IFACE_STRING	"lolwut"
+
+extern usbd_device *usbdev;
+#define CDCACM_GDB_ENDPOINT	1
+#define CDCACM_UART_ENDPOINT	3
 
 extern jmp_buf fatal_error_jmpbuf;
 extern uint8_t running_status;
@@ -57,6 +68,13 @@ extern volatile uint32_t timeout_counter;
 	gpio_set_output_config(SWDIO_PORT, GPIO_OTYPE_PP, GPIO_DRIVE_2MA, SWDIO_PIN);		\
 }
 
+extern usbd_driver lm4f_usb_driver;
+#define USB_DRIVER	lm4f_usb_driver
+#define USB_IRQ		NVIC_USB0_IRQ
+#define USB_ISR		usb0_isr
+
+#define IRQ_PRI_USB	(2 << 4)
+
 /* Use newlib provided integer only stdio functions */
 #define sscanf siscanf
 #define sprintf siprintf
@@ -91,5 +109,14 @@ inline static uint8_t gpio_get(uint32_t port, uint8_t pin) {
 }
 
 void platform_delay(uint32_t delay);
+
+/* <cdcacm.c> */
+void cdcacm_init(void);
+/* Returns current usb configuration, or 0 if not configured. */
+int cdcacm_get_config(void);
+int cdcacm_get_dtr(void);
+
+#define disconnect_usb() do { usbd_disconnect(usbdev,1); nvic_disable_irq(USB_IRQ);} while(0)
+#define setup_vbus_irq()
 
 #endif

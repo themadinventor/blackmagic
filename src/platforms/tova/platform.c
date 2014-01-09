@@ -9,6 +9,8 @@
 #define SYSTICKHZ	10
 #define SYSTICKMS	(1000 / SYSTICKHZ)
 
+#define PLL_DIV_80MHZ	5
+
 jmp_buf fatal_error_jmpbuf;
 uint8_t running_status;
 volatile uint32_t timeout_counter;
@@ -103,7 +105,7 @@ void sys_tick_handler(void)
 }
 
 
-static void
+/*static void
 uart_init(void)
 {
 	periph_clock_enable(RCC_GPIOA);
@@ -137,7 +139,7 @@ uart_init(void)
 	uart_enable_interrupts(UART0, UART_INT_RX| UART_INT_RT);
 	uart_enable_interrupts(UART0, UART_INT_TX);
 	uart_enable(UART0);
-}
+}*/
 
 
 int
@@ -146,9 +148,9 @@ platform_init(void)
         int i;
         for(i=0; i<1000000; i++);
 
-	rcc_sysclk_config(OSCSRC_MOSC, XTAL_16M, 16);
+	rcc_sysclk_config(OSCSRC_MOSC, XTAL_16M, PLL_DIV_80MHZ);
 	
-	uart_init();
+	//uart_init();
 
 	// Enable LED
 	periph_clock_enable(RCC_GPIOF);
@@ -169,7 +171,8 @@ platform_init(void)
 	gpio_mode_setup(TRST_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TRST_PIN);
 	gpio_mode_setup(SRST_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, SRST_PIN);
 
-	systick_set_reload( rcc_get_system_clock_frequency() / SYSTICKHZ);
+	systick_set_clocksource(STK_CTRL_CLKSOURCE_AHB_DIV8);
+	systick_set_reload(rcc_get_system_clock_frequency() / (SYSTICKHZ * 8));
 
 	systick_interrupt_enable();
 	systick_counter_enable();
@@ -177,7 +180,10 @@ platform_init(void)
 	nvic_enable_irq(NVIC_SYSTICK_IRQ);
 	nvic_enable_irq(NVIC_UART0_IRQ);
 
-	gdb_if_init();
+	usbuart_init();
+	cdcacm_init();
+
+	jtag_scan(NULL);
 
 	return 0;
 }
@@ -191,4 +197,9 @@ void platform_delay(uint32_t delay)
 const char *platform_target_voltage(void)
 {
 	return "not supported";
+}
+
+void assert_boot_pin(void)
+{
+	// TODO
 }
