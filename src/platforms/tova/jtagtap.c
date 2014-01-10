@@ -15,10 +15,13 @@ jtagtap_init(void)
 void
 jtagtap_reset(void)
 {
+#ifdef TRST_PORT
 	volatile int i;
 	gpio_clear(TRST_PORT, TRST_PIN);
 	for(i = 0; i < 10000; i++) asm("nop");
 	gpio_set(TRST_PORT, TRST_PIN);
+#endif
+	jtagtap_soft_reset();
 }
 
 void

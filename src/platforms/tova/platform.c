@@ -10,6 +10,7 @@
 #define SYSTICKMS	(1000 / SYSTICKHZ)
 
 #define PLL_DIV_80MHZ	5
+#define PLL_DIV_25MHZ	16
 
 jmp_buf fatal_error_jmpbuf;
 uint8_t running_status;
@@ -148,7 +149,7 @@ platform_init(void)
         int i;
         for(i=0; i<1000000; i++);
 
-	rcc_sysclk_config(OSCSRC_MOSC, XTAL_16M, PLL_DIV_80MHZ);
+	rcc_sysclk_config(OSCSRC_MOSC, XTAL_16M, PLL_DIV_25MHZ);
 	
 	//uart_init();
 
@@ -167,7 +168,7 @@ platform_init(void)
 	gpio_mode_setup(TMS_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TMS_PIN);
 	gpio_mode_setup(TCK_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TCK_PIN);
 	gpio_mode_setup(TDI_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TDI_PIN);
-	gpio_mode_setup(TDO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TDO_PIN);
+	gpio_mode_setup(TDO_PORT, GPIO_MODE_INPUT, GPIO_PUPD_NONE, TDO_PIN);
 	gpio_mode_setup(TRST_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, TRST_PIN);
 	gpio_mode_setup(SRST_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, SRST_PIN);
 
