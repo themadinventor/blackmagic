@@ -49,6 +49,7 @@ static bool cmd_morse(void);
 static bool cmd_connect_srst(target *t, int argc, const char **argv);
 #ifdef PLATFORM_HAS_TRACESWO
 static bool cmd_traceswo(void);
+static bool cmd_tracebaud(target *t, int argc, const char **argv);
 #endif
 
 const struct command_s cmd_list[] = {
@@ -61,6 +62,7 @@ const struct command_s cmd_list[] = {
 	{"connect_srst", (cmd_handler)cmd_connect_srst, "Configure connect under SRST: (enable|disable)" },
 #ifdef PLATFORM_HAS_TRACESWO
 	{"traceswo", (cmd_handler)cmd_traceswo, "Start trace capture" },
+	{"tracebaud", (cmd_handler)cmd_tracebaud, "Change trace data rate" },
 #endif
 	{NULL, NULL, NULL}
 };
@@ -228,6 +230,18 @@ static bool cmd_traceswo(void)
 	extern char serial_no[9];
 	traceswo_init();
 	gdb_outf("%s:%02X:%02X\n", serial_no, 5, 0x85);
+	return true;
+}
+
+static bool cmd_tracebaud(target *t, int argc, const char **argv)
+{
+	if (argc == 1)
+		gdb_outf("No baudrate given.");
+	else {
+		unsigned int baud = atoi(argv[1]);
+		traceswo_baud(baud);
+		gdb_outf("SWO baud rate set to %d\n", baud);
+	}
 	return true;
 }
 #endif

@@ -1,8 +1,7 @@
 /*
- * This file is part of the Black Magic Debug project.
+ * This file is part of the libopenstm32 project.
  *
- * Copyright (C) 2012  Black Sphere Technologies Ltd.
- * Written by Gareth McMullin <gareth@blacksphere.co.nz>
+ * Copyright (C) 2010 Thomas Otto <tommi@viadmin.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __TRACESWO_H
-#define __TRACESWO_H
 
-#include <libopencm3/usb/usbd.h>
+/* Define memory regions. */
+MEMORY
+{
+	rom (rx) : ORIGIN = 0x00000000, LENGTH = 256K
+	ram (rwx) : ORIGIN = 0x20000000, LENGTH = 32K 
+}
 
-void traceswo_init(void);
-void traceswo_baud(unsigned int baud);
-void trace_buf_drain(usbd_device *dev, uint8_t ep);
+/* Include the common ld script from libopenstm32. */
+INCLUDE libopencm3_lm4f.ld
 
-#endif
